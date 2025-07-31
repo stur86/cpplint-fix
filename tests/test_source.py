@@ -44,12 +44,13 @@ int main() {
     source_file_path = tmp_path / "test_source.cpp"
     source_file_path.write_text(source_content)
     
-    source_file = SourceFile(source_file_path)
+    source_file = SourceFile.from_file(source_file_path)
     assert source_file.path == source_file_path
-    assert len(source_file._lines) == 4  # 3 lines + 1 empty line
+    assert len(source_file.lines) == 4  # 3 lines + 1 empty line
+    assert len(source_file) == 4
     source_lines = source_content.splitlines(keepends=False)
-    
-    for (i, line) in enumerate(source_file._lines, start=1):
+
+    for (i, line) in enumerate(source_file.lines, start=1):
         assert line.number == i
         assert isinstance(line.line, str)
         assert line.line == source_lines[i - 1]

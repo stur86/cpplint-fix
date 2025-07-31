@@ -6,9 +6,10 @@ from cpplint_fix.parser import CPPLFailure, CPPLTestcase, CPPLTestsuite
 def test_failure():
     failure_elem = ET.Element("failure")
     failure_elem.text = "42: Some error message [E123] [1]"
-    
-    failure = CPPLFailure(failure_elem)
-    
+
+    failure = CPPLFailure.from_xml(failure_elem)
+    assert isinstance(failure, CPPLFailure)
+
     assert failure.lineno == 42
     assert failure.message == "Some error message"
     assert failure.code == "E123"
@@ -17,25 +18,25 @@ def test_failure():
     # Test invalid failure element
     invalid_elem = ET.Element("not_failure")
     with pytest.raises(AssertionError):
-        CPPLFailure(invalid_elem)
-        
+        CPPLFailure.from_xml(invalid_elem)
+
     invalid_elem = ET.Element("failure")
     invalid_elem.text = None
 
     with pytest.raises(ValueError):
-        CPPLFailure(invalid_elem)
+        CPPLFailure.from_xml(invalid_elem)
         
     invalid_elem.text = "invalid format"
     with pytest.raises(ValueError):
-        CPPLFailure(invalid_elem)
-        
+        CPPLFailure.from_xml(invalid_elem)
+
 def test_testcase():
     testcase_elem = ET.Element("testcase", name="test_file.cpp")
     failure_elem = ET.Element("failure")
     failure_elem.text = "42: Some error message [E123] [1]"
     testcase_elem.append(failure_elem)
     
-    testcase = CPPLTestcase(testcase_elem)
+    testcase = CPPLTestcase.from_xml(testcase_elem)
     
     assert testcase.fpath == Path("test_file.cpp")
     assert len(testcase.failures) == 1
@@ -46,11 +47,11 @@ def test_testcase():
     # Test invalid testcase element
     invalid_elem = ET.Element("not_testcase")
     with pytest.raises(AssertionError):
-        CPPLTestcase(invalid_elem)
-        
+        CPPLTestcase.from_xml(invalid_elem)
+    
     invalid_elem = ET.Element("testcase", name="")
     with pytest.raises(ValueError):
-        CPPLTestcase(invalid_elem)
+        CPPLTestcase.from_xml(invalid_elem)
         
 def test_testsuite():
     testsuite_elem = ET.Element("testsuite")
@@ -60,14 +61,14 @@ def test_testsuite():
     testcase_elem.append(failure_elem)
     testsuite_elem.append(testcase_elem)
     
-    testsuite = CPPLTestsuite(testsuite_elem)
+    testsuite = CPPLTestsuite.from_xml(testsuite_elem)
     
     assert len(testsuite.testcases) == 1
     assert testsuite.testcases_dict[Path("test_file.cpp")].fpath == Path("test_file.cpp")
     assert len(testsuite.testcases_dict[Path("test_file.cpp")].failures) == 1
 
     # Test empty testsuite
-    empty_suite = CPPLTestsuite(ET.Element("testsuite"))
+    empty_suite = CPPLTestsuite.from_xml(ET.Element("testsuite"))
     assert len(empty_suite.testcases) == 0
     
 def test_example_xml(examples_path: Path):
