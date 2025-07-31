@@ -15,7 +15,13 @@ cpplint-fix = "cpplint_fix:main"
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
+[tool.taskipy.tasks]
+test = "pytest tests"
+lint = "ruff check src tests"
+
 [dependency-groups]
 dev = [
     "pytest>=8.4.1",
+    "ruff>=0.12.7",
+    "taskipy>=1.14.1",
 ]

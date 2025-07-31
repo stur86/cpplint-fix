@@ -73,12 +73,10 @@ def test_testsuite():
 def test_example_xml(examples_path: Path):
     example_file = examples_path / "example.xml"
     assert example_file.exists(), f"Example file {example_file} does not exist"
-    
-    tree = ET.parse(example_file)
-    root = tree.getroot()
-    
-    testsuite = CPPLTestsuite(root)
-    
+
+    testsuite = CPPLTestsuite.from_file(example_file)
+    assert isinstance(testsuite, CPPLTestsuite), "Parsed object is not of type CPPLTestsuite"
+
     assert len(testsuite.testcases) > 0, "No test cases found in example XML"
     for testcase in testsuite.testcases:
         assert isinstance(testcase, CPPLTestcase), "Testcase is not of type CPPLTestcase"

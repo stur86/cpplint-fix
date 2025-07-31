@@ -97,3 +97,10 @@ class CPPLTestsuite:
     
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}(testcases_count={len(self._testcases)})"
+    
+    @classmethod
+    def from_file(cls, file_path: Path) -> "CPPLTestsuite":
+        """Creates a CPPLTestsuite from an XML file."""
+        tree = XMLET.parse(file_path)
+        root = tree.getroot()
+        return cls(root)
