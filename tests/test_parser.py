@@ -75,7 +75,7 @@ def test_example_xml(examples_path: Path):
     example_file = examples_path / "example.xml"
     assert example_file.exists(), f"Example file {example_file} does not exist"
 
-    testsuite = CPPLTestsuite.from_file(example_file)
+    testsuite = CPPLTestsuite.from_string(example_file.read_text(encoding="utf-8"))
     assert isinstance(testsuite, CPPLTestsuite), "Parsed object is not of type CPPLTestsuite"
 
     assert len(testsuite.testcases) > 0, "No test cases found in example XML"

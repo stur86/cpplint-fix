@@ -78,8 +78,7 @@ class CPPLTestsuite:
         return cls(testcases=testcases)
 
     @classmethod
-    def from_file(cls, file_path: Path) -> "CPPLTestsuite":
-        """Creates a CPPLTestsuite from an XML file."""
-        tree = XMLET.parse(file_path)
-        root = tree.getroot()
+    def from_string(cls, xml_string: str) -> "CPPLTestsuite":
+        """Creates a CPPLTestsuite from an XML string."""
+        root = XMLET.fromstring(xml_string)
         return cls.from_xml(root)
