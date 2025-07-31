@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuite errors="0" failures="1" name="cpplint" tests="1"><testcase name="tests/examples/no_newline.cpp"><failure>5: Could not find a newline character at the end of the file. [whitespace/ending_newline] [5]</failure></testcase></testsuite>
