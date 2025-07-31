@@ -1,4 +1,6 @@
+import os
 from pathlib import Path
+from tempfile import NamedTemporaryFile
 from dataclasses import dataclass, field
 
 
@@ -57,6 +59,21 @@ class SourceFile:
 
     def __repr__(self) -> str:
         return f"SourceFile(path={self.path}, lines_count={len(self.lines)})"
+    
+    def to_file(self, file_path: Path) -> None:
+        """Writes the source file to the specified path."""
+        all_lines = sum([line.edited_lines for line in self.lines], [])
+        with file_path.open("w", encoding="utf-8") as f:
+            f.write("\n".join(all_lines))
+        
+    def apply(self) -> None:
+        """Applies all edits to the source file."""
+        # First, create a temporary file with all edits applied
+        temp_file = NamedTemporaryFile(delete=False, mode='w', encoding='utf-8')
+        self.to_file(Path(temp_file.name))
+        # Now, replace the original file with the temporary file
+        temp_file.close()
+        os.replace(temp_file.name, self.path)
 
     @classmethod
     def from_file(cls, file_path: Path) -> "SourceFile":

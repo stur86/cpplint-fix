@@ -61,3 +61,47 @@ int main() {
     
     assert source_file[2].insert_before == ["// This is a comment before line 2"]
     assert source_file[3].insert_after == ["// This is a comment after line 3"]
+
+    # New test for SourceFile.to_file and fix functionality
+
+def test_source_file_to_file_and_apply(tmp_path: Path):
+    """Test SourceFile.to_file and apply functionality."""
+    # Create a test file
+    source_content = """
+int main() {
+    return 0;
+}
+"""
+    source_file_path = tmp_path / "test_to_file.cpp"
+    source_file_path.write_text(source_content)
+
+    # Load with SourceFile
+    source_file = SourceFile.from_file(source_file_path)
+
+    # Insert comments
+    source_file.insert_before(2, "// Inserted before line 2")
+    source_file.insert_after(3, "// Inserted after line 3")
+
+    # Write to a new file
+    output_path = tmp_path / "output.cpp"
+    source_file.to_file(output_path)
+
+    # Read back and check contents
+    with output_path.open() as f:
+        lines = f.read().splitlines(keepends=True)
+    expected_lines = [
+        "\n",
+        "// Inserted before line 2\n",
+        "int main() {\n",
+        "    return 0;\n",
+        "// Inserted after line 3\n",
+        "}"
+    ]
+        
+    assert lines == expected_lines
+    
+
+    # Test fix: should replace the original file with the edited content
+    source_file.apply()
+    fixed_lines = source_file_path.read_text().splitlines(keepends=True)
+    assert fixed_lines == expected_lines, "Fixed file content does not match expected content"
