@@ -16,7 +16,6 @@ class SourceLine:
             raise TypeError("Line must be a string")
         # Strip any newline characters from the line
         object.__setattr__(self, "line", self.line.strip("\n"))
-        print(self)
 
     @property
     def edited_lines(self) -> list[str]:
