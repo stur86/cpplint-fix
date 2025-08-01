@@ -33,6 +33,22 @@ def test_source_line():
         SourceLine(number=0, line="Invalid line")
     with pytest.raises(TypeError):
         SourceLine(number=1, line=123) # type: ignore
+        
+    # Test edits
+    src_line = SourceLine(number=1, line="Original line")
+    src_line.insert_before.append("Inserted before line")
+    src_line.edits.append("Edited line")
+    assert src_line.deleted is False
+    assert src_line.final_line == "Edited line"
+    assert src_line.edited_lines == [
+        "Inserted before line",
+        "Edited line"
+    ]
+    
+    src_line.edits.append(None)  # Mark for deletion
+    assert src_line.deleted is True
+    assert src_line.final_line is None
+    assert src_line.edited_lines == [] # No lines should be returned after deletion
 
 def test_source_file(tmp_path: Path):
     source_content = """
@@ -62,7 +78,10 @@ int main() {
     assert source_file[2].insert_before == ["// This is a comment before line 2"]
     assert source_file[3].insert_after == ["// This is a comment after line 3"]
 
-    # New test for SourceFile.to_file and fix functionality
+    # Test editing a line
+    source_file.edit_line(2, "int main() { return 1; }")
+    assert source_file[2].edits == ["int main() { return 1; }"]
+    assert source_file[2].final_line == "int main() { return 1; }"
 
 def test_source_file_to_file_and_apply(tmp_path: Path):
     """Test SourceFile.to_file and apply functionality."""

@@ -10,6 +10,7 @@ class SourceLine:
     line: str
     insert_before: list[str] = field(default_factory=list)
     insert_after: list[str] = field(default_factory=list)
+    edits: list[str|None] = field(default_factory=list)
 
     def __post_init__(self):
         if self.number <= 0:
@@ -22,7 +23,23 @@ class SourceLine:
     @property
     def edited_lines(self) -> list[str]:
         """Returns the lines to be inserted before and after the source line."""
-        return self.insert_before + [self.line] + self.insert_after
+        final_line = self.final_line
+        if final_line is None:
+            return []
+        return self.insert_before + [final_line] + self.insert_after
+
+    @property
+    def deleted(self) -> bool:
+        """Returns True if the line is marked for deletion."""
+        return (self.final_line is None)
+    
+    @property
+    def final_line(self) -> str | None:
+        """Returns the final line after all edits."""
+        if not self.edits:
+            return self.line
+        # Return the last edit if available, otherwise the original line
+        return self.edits[-1]
 
     def __repr__(self) -> str:
         return f"{self.number}: {self.line} (+{len(self.insert_before)} before, {len(self.insert_after)} after)"
@@ -34,23 +51,37 @@ class SourceFile:
 
     path: Path
     lines: list[SourceLine] = field(repr=False)
+    
+    def _valid_line_number(self, line_number: int) -> None:
+        """Check if the line number is valid."""
+        if line_number < 1 or line_number > len(self.lines):
+            raise IndexError("Line number out of range")
 
     def insert_before(self, line_number: int, text: str):
         """Insert a line before the specified line number."""
-        if line_number < 1 or line_number > len(self.lines):
-            raise IndexError("Line number out of range")
+        self._valid_line_number(line_number)
         self.lines[line_number - 1].insert_before.append(text)
 
     def insert_after(self, line_number: int, text: str):
         """Insert a line after the specified line number."""
-        if line_number < 1 or line_number > len(self.lines):
-            raise IndexError("Line number out of range")
+        self._valid_line_number(line_number)
         self.lines[line_number - 1].insert_after.append(text)
+        
+    def edit_line(self, line_number: int, text: str):
+        """Edit the line at the specified line number."""
+        self._valid_line_number(line_number)
+        # Store the edit in the edits list
+        self.lines[line_number - 1].edits.append(text)
+        
+    def delete_line(self, line_number: int):
+        """Mark the line at the specified line number for deletion."""
+        self._valid_line_number(line_number)
+        # Set the final line to None to indicate deletion
+        self.lines[line_number - 1].edits.append(None)
 
     def __getitem__(self, index: int) -> SourceLine:
         """Get a specific line by its index (1-based)."""
-        if index < 1 or index > len(self.lines):
-            raise IndexError("Line index out of range")
+        self._valid_line_number(index)
         return self.lines[index - 1]
 
     def __len__(self) -> int:
