@@ -1,10 +1,11 @@
 from pathlib import Path
 import pytest
+from cpplint_fix.edits import Edits
 from .conftest import EditExample
 from cpplint_fix.wrapper import fix_folder
 
 @pytest.mark.usefixtures("edit_example")
-@pytest.mark.parametrize("error_code", ["whitespace/ending_newline"])
+@pytest.mark.parametrize("error_code", Edits.codes())
 def test_edit(edit_example: EditExample, tmp_path: Path):
     assert edit_example is not None
     
