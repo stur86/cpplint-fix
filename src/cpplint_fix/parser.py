@@ -67,6 +67,11 @@ class CPPLTestsuite:
     def testcases_dict(self) -> dict[Path, CPPLTestcase]:
         """Returns a dictionary mapping file paths to Testcase objects."""
         return {tc.fpath: tc for tc in self.testcases}
+    
+    @property
+    def total_failures(self) -> int:
+        """Returns the total number of failures across all testcases."""
+        return sum(len(tc.failures) for tc in self.testcases)
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}(testcases_count={len(self.testcases)})"

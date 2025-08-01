@@ -1,4 +1,3 @@
-import types
 from typing import Type
 from .base import BaseEdit
 from .whitespace import MissingEndingNL
