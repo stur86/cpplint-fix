@@ -43,4 +43,9 @@ def test_base_edit_invalid_failure():
 def test_edits_list(edit_code: str):
     # Check that the edits were scanned correctly
     edit_class = Edits.get(edit_code)
+    assert edit_class is not None, f"Edit class for {edit_code} should not be None"
     assert issubclass(edit_class, BaseEdit), f"{edit_class} should be a subclass of BaseEdit"
+    
+def test_edits_unknown_code():
+    # Check that an unknown edit code raises KeyError
+    assert Edits.get("unknown/edit_code") is None, "Unknown edit code should return None"

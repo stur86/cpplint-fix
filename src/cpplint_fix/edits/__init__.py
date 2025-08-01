@@ -16,8 +16,8 @@ class Edits():
     }
     
     @classmethod
-    def get(cls, edit_code: str) -> Type[BaseEdit]:
+    def get(cls, edit_code: str) -> Type[BaseEdit] | None:
         """Returns the edit class for the given error code."""
         if edit_code not in cls.__edits:
-            raise KeyError(f"Edit with error code '{edit_code}' not found")
+            return None
         return cls.__edits[edit_code]

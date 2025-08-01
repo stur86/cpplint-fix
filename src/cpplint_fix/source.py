@@ -97,7 +97,7 @@ class SourceFile:
         with file_path.open("w", encoding="utf-8") as f:
             f.write("\n".join(all_lines))
         
-    def apply(self) -> None:
+    def apply_edits(self) -> None:
         """Applies all edits to the source file."""
         # First, create a temporary file with all edits applied
         temp_file = NamedTemporaryFile(delete=False, mode='w', encoding='utf-8')

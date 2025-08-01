@@ -10,7 +10,7 @@ def test_run_cpplint(examples_path: Path) -> None:
     assert tsuite is not None, "CPPLTestsuite should not be None"
     assert len(tsuite.testcases) == 1, "CPPLTestsuite should contain test cases"
     
-    assert tsuite.testcases[0].fpath == example_root / "main.cpp", "Test case file path does not match"
+    assert tsuite.testcases[0].fpath == Path("main.cpp"), "Test case file path does not match"
     assert len(tsuite.testcases[0].failures) == 1, "Test case should have one failure"
     failure = tsuite.testcases[0].failures[0]
     assert failure.lineno == 5, "Failure line number should be 5"

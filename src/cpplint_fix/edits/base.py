@@ -73,3 +73,6 @@ class BaseEdit(ABC):
         operations = self._operations(source_file)
         for operation in operations:
             operation.apply(source_file)
+            
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}({self._failure.lineno}: {self.error_code})"

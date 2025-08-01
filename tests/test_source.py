@@ -121,6 +121,6 @@ int main() {
     
 
     # Test fix: should replace the original file with the edited content
-    source_file.apply()
+    source_file.apply_edits()
     fixed_lines = source_file_path.read_text().splitlines(keepends=True)
     assert fixed_lines == expected_lines, "Fixed file content does not match expected content"
