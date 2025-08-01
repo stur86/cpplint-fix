@@ -1,15 +1,18 @@
 import pytest
 from pathlib import Path
-from cpplint_fix.edits.base import BaseEdit
+from cpplint_fix.edits.base import BaseEdit, EditOperation, EditOperationType
 from cpplint_fix.parser import CPPLFailure
 from cpplint_fix.source import SourceFile, SourceLine
+from cpplint_fix.edits import Edits
 
 def test_base_edit():
     class TestEdit(BaseEdit):
         _error_code = "TEST_EDIT"
-
-        def apply(self, source_file: SourceFile) -> None:
-            source_file.insert_after(self.failure.lineno, "// Test edit applied")
+        
+        def _operations(self, source_file: SourceFile) -> list[EditOperation]:
+            return [
+                EditOperation(line_number=1, operation_type=EditOperationType.INSERT_AFTER, text="// Test edit applied")
+            ]
     
     source = "const int x = 42;"
     source_file = SourceFile(path=Path("test.cpp"), lines=[SourceLine(number=1, line=source)])
@@ -28,11 +31,16 @@ def test_base_edit_invalid_failure():
     class InvalidEdit(BaseEdit):
         _error_code = "INVALID_EDIT"
 
-        def apply(self, source_file: SourceFile) -> None:
-            pass
+        def _operations(self, source_file: SourceFile) -> list[EditOperation]:
+            return []
 
     with pytest.raises(AssertionError):
         InvalidEdit(CPPLFailure(lineno=1, message="Invalid failure", code="WRONG_CODE"))
-    
-            
-    
+
+@pytest.mark.parametrize("edit_code", [
+    "whitespace/ending_newline"
+])    
+def test_edits_list(edit_code: str):
+    # Check that the edits were scanned correctly
+    edit_class = Edits.get(edit_code)
+    assert issubclass(edit_class, BaseEdit), f"{edit_class} should be a subclass of BaseEdit"
