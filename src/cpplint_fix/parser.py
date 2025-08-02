@@ -13,18 +13,16 @@ class CPPLFailure:
     _failre = re.compile(r"^(?P<lineno>\d+):\s*(?P<message>.*)\s*\[(?P<code>.*)\] \[\d+\]$")
     
     @classmethod
-    def from_xml(cls, elem: XMLET.Element) -> "CPPLFailure":
-        """Creates a CPPLFailure from an XML element."""
-        assert elem.tag == "failure", f"Expected 'failure' tag, got {elem.tag}"
-        if elem.text is None:
-            raise ValueError("Failure element text cannot be None")
-        _failm = cls._failre.match(elem.text.strip())
+    def from_message(cls, raw_msg: str) -> "CPPLFailure":
+        """Creates a CPPLFailure from a raw message string."""
+        _failm = cls._failre.match(raw_msg)
         if not _failm:
-            raise ValueError(f"Invalid failure message: {elem.text.strip()}")
+            raise ValueError(f"Invalid failure message: '{raw_msg}'")
         lineno = int(_failm.group("lineno"))
         message = _failm.group("message").strip()
         code = _failm.group("code")
         return cls(lineno=lineno, message=message, code=code)
+
 
     def __repr__(self) -> str:
         return f"{self.__class__.__name__}(lineno={self.lineno}, message='{self.message}', code='{self.code}')"
@@ -41,7 +39,19 @@ class CPPLTestcase:
         fpath = elem.attrib.get("name", "")
         if not fpath:
             raise ValueError("Testcase name cannot be empty")
-        failures = [CPPLFailure.from_xml(child) for child in elem]
+        failures: list[CPPLFailure] = []
+        for child in elem:
+            if child.tag != "failure":
+                raise ValueError(f"Unexpected tag '{child.tag}' in testcase")
+            # Get the inner text of the failure element
+            if not child.text:
+                raise ValueError("Failure element cannot be empty")
+            failure_msgs = child.text.splitlines()
+            if not failure_msgs:
+                raise ValueError("Failure element cannot be empty")
+            # Create CPPLFailure objects from the failure messages
+            failures.extend(CPPLFailure.from_message(msg) for msg in failure_msgs)
+
         return cls(fpath=Path(fpath), failures=failures)
 
     @property

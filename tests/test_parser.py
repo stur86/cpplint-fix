@@ -4,10 +4,9 @@ import xml.etree.ElementTree as ET
 from cpplint_fix.parser import CPPLFailure, CPPLTestcase, CPPLTestsuite
 
 def test_failure():
-    failure_elem = ET.Element("failure")
-    failure_elem.text = "42: Some error message [E123] [1]"
+    failure_msg = "42: Some error message [E123] [1]"
 
-    failure = CPPLFailure.from_xml(failure_elem)
+    failure = CPPLFailure.from_message(failure_msg)
     assert isinstance(failure, CPPLFailure)
 
     assert failure.lineno == 42
@@ -16,19 +15,9 @@ def test_failure():
     assert repr(failure) == "CPPLFailure(lineno=42, message='Some error message', code='E123')"
     
     # Test invalid failure element
-    invalid_elem = ET.Element("not_failure")
-    with pytest.raises(AssertionError):
-        CPPLFailure.from_xml(invalid_elem)
-
-    invalid_elem = ET.Element("failure")
-    invalid_elem.text = None
-
+    invalid_msg = "invalid format"
     with pytest.raises(ValueError):
-        CPPLFailure.from_xml(invalid_elem)
-        
-    invalid_elem.text = "invalid format"
-    with pytest.raises(ValueError):
-        CPPLFailure.from_xml(invalid_elem)
+        CPPLFailure.from_message(invalid_msg)
 
 def test_testcase():
     testcase_elem = ET.Element("testcase", name="test_file.cpp")
