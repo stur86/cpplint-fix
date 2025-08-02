@@ -16,7 +16,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.taskipy.tasks]
-test = "pytest tests"
+test = "pytest tests -vv"
 lint = "ruff check src tests"
 
 [dependency-groups]

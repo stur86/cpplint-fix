@@ -112,7 +112,11 @@ class SourceFile:
         if not file_path.exists():
             raise FileNotFoundError(f"File {file_path} does not exist")
 
-        file_lines = file_path.read_text(encoding="utf-8").splitlines()
+        file_text = file_path.read_text(encoding="utf-8")
+        file_lines = file_text.splitlines()
+        # If the file ends with a newline, it will be treated as an empty line
+        if file_text.endswith("\n"):
+            file_lines.append("")
         lines = [
             SourceLine(number=i + 1, line=line)
             for i, line in enumerate(file_lines)

@@ -51,8 +51,7 @@ def test_source_line():
     assert src_line.edited_lines == [] # No lines should be returned after deletion
 
 def test_source_file(tmp_path: Path):
-    source_content = """
-int main() {
+    source_content = """int main() {
     return 0;
 }
 """
@@ -66,11 +65,13 @@ int main() {
     assert len(source_file) == 4
     source_lines = source_content.splitlines(keepends=False)
 
-    for (i, line) in enumerate(source_file.lines, start=1):
-        assert line.number == i
-        assert isinstance(line.line, str)
-        assert line.line == source_lines[i - 1]
-        
+    for (i, line) in enumerate(source_lines, start=1):
+        assert source_file[i].number == i
+        assert isinstance(source_file[i].line, str)
+        assert line == source_file[i].line
+    # Last source line should be empty
+    assert source_file[4].line == ""
+
     # Try inserting lines
     source_file.insert_before(2, "// This is a comment before line 2")
     source_file.insert_after(3, "// This is a comment after line 3")
@@ -89,8 +90,7 @@ def test_source_file_to_file_and_apply(tmp_path: Path):
     source_content = """
 int main() {
     return 0;
-}
-"""
+}"""
     source_file_path = tmp_path / "test_to_file.cpp"
     source_file_path.write_text(source_content)
 
