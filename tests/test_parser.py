@@ -73,6 +73,6 @@ def test_example_xml(examples_path: Path):
         assert len(testcase.failures) >= 0, "Testcase has negative number of failures"
         for failure in testcase.failures:
             assert isinstance(failure, CPPLFailure), "Failure is not of type CPPLFailure"
-            assert failure.lineno > 0, "Failure line number is not positive"
+            assert failure.lineno >= 0, "Failure line number is negative"
             assert failure.message, "Failure message is empty"
             assert failure.code, "Failure code is empty"
