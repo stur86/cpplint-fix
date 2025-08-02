@@ -31,3 +31,13 @@ class TrailingWhitespace(BaseEdit):
         return [
             EditOperation(line_no, EditOperationType.EDIT, line_text.rstrip())
         ]
+        
+class BlankLine(BaseEdit):
+    """Edit to remove blank lines."""
+
+    _error_code = "whitespace/blank_line"
+
+    def _operations(self, source_file: SourceFile) -> list[EditOperation]:
+        """Returns edit operations to remove blank lines."""
+        line_no = self.failure.lineno
+        return [EditOperation(line_no, EditOperationType.DELETE)]

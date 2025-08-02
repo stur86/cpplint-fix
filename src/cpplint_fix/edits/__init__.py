@@ -1,12 +1,13 @@
 from typing import Type
 from .base import BaseEdit
-from .whitespace import MissingEndingNL, TrailingWhitespace
+from .whitespace import MissingEndingNL, TrailingWhitespace, BlankLine
 
 __all__ = [
     "BaseEdit",
     "Edits",
     "MissingEndingNL",
-    "TrailingWhitespace"
+    "TrailingWhitespace",
+    "BlankLine"
 ]
 
 class Edits:
