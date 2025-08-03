@@ -76,7 +76,7 @@ class WhitespaceIndent(BaseEdit):
         line = source_file[line_no].final_line
         # Get the number of leading spaces and round them up to the nearest multiple of 4
         if line is None:
-            raise FailedEditError(f"Could not fix {self.error_code}: Line {line_no} is missing")
+            return []
         leading_spaces = len(line) - len(line.lstrip())
         new_indent = (leading_spaces // 4 + 1) * 4
         new_line = ' ' * new_indent + line.lstrip()
@@ -88,3 +88,22 @@ class WhitespaceIndent(BaseEdit):
                 return handler(source_file)
         raise FailedEditError(f"Could not fix {self.error_code}: "
                               f"No handler found for failure message '{self.failure.message}'")
+        
+        
+class WhitespaceComments(BaseEdit):
+    """Edit to fix whitespace issues between code and comments."""
+
+    _error_code = "whitespace/comments"
+
+    def _operations(self, source_file: SourceFile) -> list[EditOperation]:
+        """Returns edit operations to fix whitespace in comments."""
+        line_no = self.failure.lineno
+        line_text = source_file[line_no].final_line
+        if line_text is None:
+            return []
+        comment_idx = line_text.find("//")
+        code_part = line_text[:comment_idx].rstrip()
+        return [
+            EditOperation(line_no, EditOperationType.EDIT, f"{code_part}  {line_text[comment_idx:]}")
+        ]
+        
