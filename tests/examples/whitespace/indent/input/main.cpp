@@ -6,5 +6,5 @@ public:
     protected:
     float y;
  private:
-    double z;
+   double z;
 };

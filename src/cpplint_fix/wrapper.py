@@ -3,7 +3,7 @@ import subprocess as sp
 import logging
 from cpplint_fix.parser import CPPLTestsuite
 from cpplint_fix.source import SourceFile
-from cpplint_fix.edits import Edits
+from cpplint_fix.edits import Edits, FailedEditError
 
 logger = logging.getLogger(__name__)
 
@@ -39,7 +39,11 @@ def fix_folder(input: Path, output: Path | None, dry_run: bool = False) -> None:
             if dry_run:
                 logger.info(f"Dry run: would apply edit {edit} to {fpath}")
                 continue
-            edit.apply(src)
+            try:
+                edit.apply(src)
+            except FailedEditError as e:
+                logger.error(f"Failed to apply edit {edit} to {fpath}: {e}")
+                continue
         
         if dry_run:
             continue

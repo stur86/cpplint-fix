@@ -1,3 +1,5 @@
+import re
+from typing import Callable
 from cpplint_fix.edits.base import BaseEdit, EditOperation, EditOperationType, FailedEditError
 from cpplint_fix.source import SourceFile
 
@@ -46,13 +48,43 @@ class WhitespaceIndent(BaseEdit):
     """Edit to fix indentation issues."""
 
     _error_code = "whitespace/indent"
-
-    def _operations(self, source_file: SourceFile) -> list[EditOperation]:
+    
+    # This edit has several variants, so we need to handle them specifically
+    _handler_type = Callable[[SourceFile], list[EditOperation]]
+    _variants: dict[re.Pattern, _handler_type]
+    
+    def __init__(self, failure):
+        super().__init__(failure)
+        
+        # Assign the variants
+        self._variants = {
+            re.compile(r"(public|private|protected): should be indented \+1 space"): self._fix_accessor_indent,
+            re.compile(r"Weird number of spaces at line-start."): self._fix_weird_indent,
+        }
+    
+    def _fix_accessor_indent(self, source_file: SourceFile) -> list[EditOperation]:
         """Returns edit operations to fix indentation."""
         line_no = self.failure.lineno
-        # Find the relevant keyword
         line = source_file[line_no].final_line
         if line is None:
             raise FailedEditError(f"Could not fix {self.error_code}: Line {line_no} is missing")
         line = " " + line.lstrip()
         return [EditOperation(line_no, EditOperationType.EDIT, line)]
+    
+    def _fix_weird_indent(self, source_file: SourceFile) -> list[EditOperation]:
+        line_no = self.failure.lineno
+        line = source_file[line_no].final_line
+        # Get the number of leading spaces and round them up to the nearest multiple of 4
+        if line is None:
+            raise FailedEditError(f"Could not fix {self.error_code}: Line {line_no} is missing")
+        leading_spaces = len(line) - len(line.lstrip())
+        new_indent = (leading_spaces // 4 + 1) * 4
+        new_line = ' ' * new_indent + line.lstrip()
+        return [EditOperation(line_no, EditOperationType.EDIT, new_line)]
+
+    def _operations(self, source_file: SourceFile) -> list[EditOperation]:
+        for pattern, handler in self._variants.items():
+            if pattern.search(self.failure.message):
+                return handler(source_file)
+        raise FailedEditError(f"Could not fix {self.error_code}: "
+                              f"No handler found for failure message '{self.failure.message}'")

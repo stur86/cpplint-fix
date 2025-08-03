@@ -1,9 +1,10 @@
 from typing import Type
-from .base import BaseEdit
+from .base import BaseEdit, FailedEditError
 from .whitespace import WhitespaceEndingNewline, WhitespaceEndOfLine, WhitespaceBlankLine, WhitespaceIndent
 
 __all__ = [
     "BaseEdit",
+    "FailedEditError",
     "Edits",
     "WhitespaceEndingNewline",
     "WhitespaceEndOfLine",
