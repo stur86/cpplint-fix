@@ -24,7 +24,7 @@ def main():
     
     config: CPPLFixConfig | None = None    
     if args.config:
-        config_path = args.config
+        config_path: Path = args.config
         if not config_path.exists():
             logging.error(f"Configuration file {config_path} does not exist.")
             return
