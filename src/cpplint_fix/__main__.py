@@ -30,7 +30,7 @@ def main():
     logger = logging.getLogger("cpplint_fix")
     logger.setLevel(logging.INFO)
     handler = logging.StreamHandler()
-    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    formatter = logging.Formatter('%(name)s - %(levelname)s - %(message)s')
     logger.addHandler(handler)
     handler.setFormatter(formatter)
     
