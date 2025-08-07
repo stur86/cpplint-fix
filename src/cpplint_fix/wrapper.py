@@ -4,6 +4,7 @@ import logging
 from cpplint_fix.parser import CPPLTestsuite
 from cpplint_fix.source import SourceFile
 from cpplint_fix.edits import Edits, FailedEditError
+from cpplint_fix.config import CPPLFixConfig
 
 logger = logging.getLogger(__name__)
 
@@ -15,10 +16,13 @@ def run_cpplint(root: Path) -> CPPLTestsuite:
     
     return CPPLTestsuite.from_string(stderr.decode("utf-8"))
 
-def fix_folder(input: Path, output: Path | None, dry_run: bool = False) -> None:
+def fix_folder(input: Path, output: Path | None, dry_run: bool = False, 
+               config: CPPLFixConfig | None = None) -> None:
     """Run cpplint on the input folder and apply fixes to the output folder."""
 
     cppl_testsuite = run_cpplint(input)
+    if config is None:
+        config = CPPLFixConfig()
     
     if not cppl_testsuite.testcases:
         logger.info("No test cases found in cpplint output.")
@@ -27,9 +31,20 @@ def fix_folder(input: Path, output: Path | None, dry_run: bool = False) -> None:
     for testcase in cppl_testsuite.testcases:
         # All paths are relative to the input directory
         fpath = input / testcase.fpath
+
+        # Check if any exclusion rules apply
+        if any(pattern.match(str(fpath)) for pattern in config.exclude_files):
+            logger.info(f"Excluding file {fpath} based on configuration.")
+            continue
+
         logger.info(f"Processing file: {fpath}")
         src = SourceFile.from_file(fpath)
         for failure in testcase.failures:
+
+            if failure.code in config.exclude_rules:
+                logger.info(f"Excluding rule {failure.code} for file {fpath}")
+                continue
+
             edit_class = Edits.get(failure.code)
             if edit_class is None:
                 logger.warning(f"No edits found for error code: {failure.code}")

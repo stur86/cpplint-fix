@@ -15,7 +15,7 @@ def test_cppl_fix_config():
     assert config.exclude_rules == ["whitespace/line_length", "build/include_order"]
     assert len(config.exclude_files) == 2
     assert all(isinstance(pattern, Pattern) for pattern in config.exclude_files)
-    assert config.exclude_files[0].match("test_file.cpp")  # Should match
+    assert config.exclude_files[0].match("path/test_file.cpp")  # Should match
     assert config.exclude_files[1].match("example_file.h")  # Should match
     assert not config.exclude_files[0].match("other_file.cpp")  # Should not match
     
