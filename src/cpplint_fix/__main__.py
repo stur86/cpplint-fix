@@ -1,8 +1,15 @@
 from pathlib import Path
 import argparse as ap
+from typing import Protocol
 from cpplint_fix.wrapper import fix_folder
 from cpplint_fix.config import CPPLFixConfig
 import logging
+
+class MainArgs(Protocol):
+    input: Path
+    output: Path | None
+    config: Path | None
+    dry_run: bool
 
 
 def main():
@@ -15,18 +22,23 @@ def main():
     parser.add_argument("--dry-run", action="store_true",
                         help="If set, only print the changes without applying them")
     
-    args = parser.parse_args()
+    args: MainArgs = parser.parse_args() # type: ignore
     
     input_path = args.input
     output_path = args.output
     
-    logging.basicConfig(level=logging.INFO)
+    logger = logging.getLogger("cpplint_fix")
+    logger.setLevel(logging.INFO)
+    handler = logging.StreamHandler()
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    logger.addHandler(handler)
+    handler.setFormatter(formatter)
     
     config: CPPLFixConfig | None = None    
     if args.config:
         config_path: Path = args.config
         if not config_path.exists():
-            logging.error(f"Configuration file {config_path} does not exist.")
+            logger.error(f"Configuration file {config_path} does not exist.")
             return
         
         with config_path.open('r') as f:
@@ -34,9 +46,9 @@ def main():
         
         try:
             config = CPPLFixConfig.model_validate_yaml(config_content)
-            logging.info("Configuration loaded successfully.")
+            logger.info("Configuration loaded successfully.")
         except Exception as e:
-            logging.error(f"Failed to load configuration: {e}")
+            logger.error(f"Failed to load configuration: {e}")
             return
 
     fix_folder(input_path, output_path, dry_run=args.dry_run, config=config)

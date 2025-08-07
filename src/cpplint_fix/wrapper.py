@@ -39,6 +39,7 @@ def fix_folder(input: Path, output: Path | None, dry_run: bool = False,
 
         logger.info(f"Processing file: {fpath}")
         src = SourceFile.from_file(fpath)
+        edits_count = 0
         for failure in testcase.failures:
 
             if failure.code in config.exclude_rules:
@@ -56,6 +57,7 @@ def fix_folder(input: Path, output: Path | None, dry_run: bool = False,
                 continue
             try:
                 edit.apply(src)
+                edits_count += 1
             except FailedEditError as e:
                 logger.error(f"Failed to apply edit {edit} to {fpath}: {e}")
                 continue
@@ -67,6 +69,6 @@ def fix_folder(input: Path, output: Path | None, dry_run: bool = False,
             dest_path = output / fpath.name
             src.to_file(dest_path)
             logger.info(f"Fixed file written to: {dest_path}")
-        else:
+        elif edits_count > 0:
             logger.info(f"Applying edits to source file: {fpath}")
             src.apply_edits()
