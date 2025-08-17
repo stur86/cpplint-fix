@@ -1,5 +1,7 @@
 # cpplint-fix
 
+[![Run tests](https://github.com/stur86/cpplint-fix/actions/workflows/test.yml/badge.svg)](https://github.com/stur86/cpplint-fix/actions/workflows/test.yml)
+
 The [Google C++ Style Guide](https://google.github.io/styleguide/cppguide.html) sets some conventions for how to write C++ code that have often been adopted as a good stylistic standard by C++ developers. As it happens, usually, when it comes to these styles, it's very convenient to have automated tools to detect or even fix any errors, which can then be made part of automated pipelines or pre-commit hooks to enforce the chosen style.
 
 [`cpplint`](https://github.com/cpplint/cpplint) is a Python script that detects and enforces many of the rules in that style guide, especially surrounding things like spaces, comments, indents and so on. This is a useful tool when writing C++ code following the guide.
