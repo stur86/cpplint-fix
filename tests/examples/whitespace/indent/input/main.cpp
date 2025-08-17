@@ -9,7 +9,7 @@ public:
     class Inner {
         public:
       int inner_x;
-    };
+      };
  private:
    double z;
-};
+ };
