@@ -10,15 +10,24 @@ logger = logging.getLogger(__name__)
 
 def run_cpplint(root: Path) -> CPPLTestsuite:
     """Run cpplint on the given root directory and return the parsed results."""
-    cmd = ["cpplint", "--output=junit", "--recursive", "./"]
+    if root.is_dir():
+        cmd = ["cpplint", "--output=junit", "--recursive", "./"]
+    else:
+        fname = root.name
+        cmd = ["cpplint", "--output=junit", fname]
+        root = root.parent  # Use the parent directory as the working directory
     proc = sp.Popen(cmd, stdout=sp.PIPE, stderr=sp.PIPE, cwd=root)
     _, stderr = proc.communicate()
     
     return CPPLTestsuite.from_string(stderr.decode("utf-8"))
 
-def fix_folder(input: Path, output: Path | None, dry_run: bool = False, 
+def fix_files(input: Path, output: Path | None, dry_run: bool = False, 
                config: CPPLFixConfig | None = None) -> None:
-    """Run cpplint on the input folder and apply fixes to the output folder."""
+    """Run cpplint on the input files and apply fixes to the output files/folder."""
+    
+    # Check if input is a file or folder
+    root_dir = input if input.is_dir() else input.parent
+       
 
     cppl_testsuite = run_cpplint(input)
     if config is None:
@@ -30,7 +39,7 @@ def fix_folder(input: Path, output: Path | None, dry_run: bool = False,
     
     for testcase in cppl_testsuite.testcases:
         # All paths are relative to the input directory
-        fpath = input / testcase.fpath
+        fpath = root_dir / testcase.fpath
 
         # Check if any exclusion rules apply
         if any(pattern.match(str(fpath)) for pattern in config.exclude_files):

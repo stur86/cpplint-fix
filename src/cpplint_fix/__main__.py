@@ -1,7 +1,7 @@
 from pathlib import Path
 import argparse as ap
 from typing import Protocol
-from cpplint_fix.wrapper import fix_folder
+from cpplint_fix.wrapper import fix_files
 from cpplint_fix.config import CPPLFixConfig
 import logging
 
@@ -14,7 +14,7 @@ class MainArgs(Protocol):
 
 def main():
     parser = ap.ArgumentParser(description="Run cpplint and apply fixes to source files.")
-    parser.add_argument("input", type=Path, help="Input directory containing source files")
+    parser.add_argument("input", type=Path, help="Input directory containing source files, or single file")
     parser.add_argument("--output", "-o", type=Path, default=None, 
                         help="Output directory for fixed files (optional)")
     parser.add_argument("--config", "-c", type=Path, default=None,
@@ -51,7 +51,7 @@ def main():
             logger.error(f"Failed to load configuration: {e}")
             return
 
-    fix_folder(input_path, output_path, dry_run=args.dry_run, config=config)
+    fix_files(input_path, output_path, dry_run=args.dry_run, config=config)
 
 if __name__ == "__main__":
     main()
