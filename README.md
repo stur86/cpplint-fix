@@ -1,5 +1,7 @@
 # cpplint-fix
 
+[![Run tests](https://github.com/stur86/cpplint-fix/actions/workflows/test.yml/badge.svg)](https://github.com/stur86/cpplint-fix/actions/workflows/test.yml)
+
 The [Google C++ Style Guide](https://google.github.io/styleguide/cppguide.html) sets some conventions for how to write C++ code that have often been adopted as a good stylistic standard by C++ developers. As it happens, usually, when it comes to these styles, it's very convenient to have automated tools to detect or even fix any errors, which can then be made part of automated pipelines or pre-commit hooks to enforce the chosen style.
 
 [`cpplint`](https://github.com/cpplint/cpplint) is a Python script that detects and enforces many of the rules in that style guide, especially surrounding things like spaces, comments, indents and so on. This is a useful tool when writing C++ code following the guide.
@@ -56,21 +58,21 @@ You can provide a YAML configuration file to customize which rules or files to e
 ### Configuration Fields
 
 - `exclude_rules` (list of strings):
-	- A list of cpplint error codes (e.g., `whitespace/indent`, `whitespace/blank_line`) to exclude from fixing. If a rule is listed here, `cpplint-fix` will not attempt to fix errors of that type.
+    - A list of cpplint error codes (e.g., `whitespace/indent`, `whitespace/blank_line`) to exclude from fixing. If a rule is listed here, `cpplint-fix` will not attempt to fix errors of that type.
 
 - `exclude_files` (list of regex patterns as strings):
-	- A list of regular expression patterns (as strings) that match file paths to exclude from fixing. Any file whose path matches one of these patterns will be skipped.
+    - A list of regular expression patterns (as strings) that match file paths to exclude from fixing. Any file whose path matches one of these patterns will be skipped.
 
 #### Example Configuration
 
 ```yaml
 exclude_rules:
-	- whitespace/indent
-	- whitespace/blank_line
+    - whitespace/indent
+    - whitespace/blank_line
 
 exclude_files:
-	- ".*test/.*"           # Exclude all files in any 'test' directory
-	- ".*main.cpp$"         # Exclude files named 'main.cpp'
+    - ".*test/.*"           # Exclude all files in any 'test' directory
+    - ".*main.cpp$"         # Exclude files named 'main.cpp'
 ```
 
 #### Field Details
