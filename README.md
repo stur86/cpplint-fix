@@ -56,21 +56,21 @@ You can provide a YAML configuration file to customize which rules or files to e
 ### Configuration Fields
 
 - `exclude_rules` (list of strings):
-	- A list of cpplint error codes (e.g., `whitespace/indent`, `whitespace/blank_line`) to exclude from fixing. If a rule is listed here, `cpplint-fix` will not attempt to fix errors of that type.
+    - A list of cpplint error codes (e.g., `whitespace/indent`, `whitespace/blank_line`) to exclude from fixing. If a rule is listed here, `cpplint-fix` will not attempt to fix errors of that type.
 
 - `exclude_files` (list of regex patterns as strings):
-	- A list of regular expression patterns (as strings) that match file paths to exclude from fixing. Any file whose path matches one of these patterns will be skipped.
+    - A list of regular expression patterns (as strings) that match file paths to exclude from fixing. Any file whose path matches one of these patterns will be skipped.
 
 #### Example Configuration
 
 ```yaml
 exclude_rules:
-	- whitespace/indent
-	- whitespace/blank_line
+    - whitespace/indent
+    - whitespace/blank_line
 
 exclude_files:
-	- ".*test/.*"           # Exclude all files in any 'test' directory
-	- ".*main.cpp$"         # Exclude files named 'main.cpp'
+    - ".*test/.*"           # Exclude all files in any 'test' directory
+    - ".*main.cpp$"         # Exclude files named 'main.cpp'
 ```
 
 #### Field Details
