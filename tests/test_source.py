@@ -1,9 +1,16 @@
 import pytest
 from pathlib import Path
 from dataclasses import FrozenInstanceError
-from cpplint_fix.source import SourceLine, SourceFile
+from cpplint_fix.source import SourceLine, SourceFile, NestingType, CleansedLines
+from cpplint import _BlockInfo, _ClassInfo, _NamespaceInfo
 
-
+@pytest.mark.parametrize("obj, value", [
+    (_BlockInfo(0, True), NestingType.BLOCK),
+    (_ClassInfo("Test", True, CleansedLines(["class Test {"]), 0), NestingType.CLASS),
+    (_NamespaceInfo(0, True), NestingType.NAMESPACE),
+])
+def test_nesting_type(obj: _BlockInfo, value: NestingType):
+    assert NestingType.from_object(obj) == value
 
 def test_source_line():
     line = SourceLine(number=42, line="int main() { return 0; };\n")
@@ -124,3 +131,41 @@ int main() {
     source_file.apply_edits()
     fixed_lines = source_file_path.read_text().splitlines(keepends=True)
     assert fixed_lines == expected_lines, "Fixed file content does not match expected content"
+
+def test_source_file_block_info(tmp_path: Path):
+    source_content = """// Some file
+namespace my_space {
+    class Something 
+    {
+        Something() {
+            // Implementation
+        }
+    }
+}
+// Nothing here
+"""
+
+    test_file_path = tmp_path / "test_block_info.cpp"
+    with test_file_path.open("w", encoding="utf-8") as f:
+        f.write(source_content)
+        
+    source_file = SourceFile.from_file(test_file_path)
+    assert source_file.path == test_file_path
+    assert len(source_file.lines) == 11
+    
+    for i in range(1, len(source_file.lines) + 1):  
+        source_line = source_file[i]
+        
+        if 2 <= i < 9:
+            assert source_line.nesting_level >= 1
+            assert source_line.nesting_types[0] == NestingType.NAMESPACE
+        
+        if 3 <= i < 8:
+            assert source_line.nesting_level >= 2
+            assert source_line.nesting_types[1] == NestingType.CLASS
+            assert source_line.total_class_indent == 4  # Indentation level of the class
+        if 5 <= i < 7:
+            assert source_line.nesting_level == 3
+            assert source_line.nesting_types[2] == NestingType.BLOCK
+    
+    # Namespace extent should start from

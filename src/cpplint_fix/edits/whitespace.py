@@ -65,18 +65,20 @@ class WhitespaceIndent(BaseEdit):
     def _fix_accessor_indent(self, source_file: SourceFile) -> list[EditOperation]:
         """Returns edit operations to fix indentation."""
         line_no = self.failure.lineno
-        line = source_file[line_no].final_line
+        source_line = source_file[line_no]
+        line = source_line.final_line
         if line is None:
             raise FailedEditError(f"Could not fix {self.error_code}: Line {line_no} is missing")
-        line = " " + line.lstrip()
+        line = " "*(source_line.total_class_indent+1) + line.lstrip()
         return [EditOperation(line_no, EditOperationType.EDIT, line)]
     
     def _fix_weird_indent(self, source_file: SourceFile) -> list[EditOperation]:
         line_no = self.failure.lineno
-        line = source_file[line_no].final_line
-        # Get the number of leading spaces and round them up to the nearest multiple of 4
+        source_line = source_file[line_no]
+        line = source_line.final_line
         if line is None:
             return []
+        # Get the number of leading spaces and round them up to the nearest multiple of 4
         leading_spaces = len(line) - len(line.lstrip())
         new_indent = (leading_spaces // 4 + 1) * 4
         new_line = ' ' * new_indent + line.lstrip()

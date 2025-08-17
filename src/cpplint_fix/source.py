@@ -1,13 +1,31 @@
 import os
+from enum import Enum
+from copy import deepcopy
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 from dataclasses import dataclass, field
+from cpplint import CleansedLines, NestingState, _BlockInfo, _ClassInfo, _NamespaceInfo
+
+class NestingType(Enum):
+    """Enum to represent different types of nesting."""
+    BLOCK = "block"
+    CLASS = "class"
+    NAMESPACE = "namespace"
+    
+    @staticmethod
+    def from_object(obj: _BlockInfo) -> "NestingType":
+        if isinstance(obj, _ClassInfo):
+            return NestingType.CLASS
+        elif isinstance(obj, _NamespaceInfo):
+            return NestingType.NAMESPACE
+        return NestingType.BLOCK
 
 
 @dataclass(frozen=True)
 class SourceLine:
     number: int
     line: str
+    block_info: tuple[_BlockInfo, ...] = field(default_factory=tuple)
     insert_before: list[str] = field(default_factory=list)
     insert_after: list[str] = field(default_factory=list)
     edits: list[str|None] = field(default_factory=list)
@@ -40,6 +58,24 @@ class SourceLine:
             return self.line
         # Return the last edit if available, otherwise the original line
         return self.edits[-1]
+    
+    @property
+    def last_block(self) -> _BlockInfo | None:
+        if len(self.block_info) == 0:
+            return None
+        return self.block_info[-1]
+    
+    @property
+    def nesting_level(self) -> int:
+        return len(self.block_info)
+    
+    @property
+    def nesting_types(self) -> list[NestingType]:
+        return [NestingType.from_object(info) for info in self.block_info]
+    
+    @property
+    def total_class_indent(self) -> int:
+        return sum(info.class_indent for info in self.block_info if isinstance(info, _ClassInfo))
 
     def __repr__(self) -> str:
         return f"{self.number}: {self.line} (+{len(self.insert_before)} before, {len(self.insert_after)} after)"
@@ -51,7 +87,7 @@ class SourceFile:
 
     path: Path
     lines: list[SourceLine] = field(repr=False)
-    
+        
     def _valid_line_number(self, line_number: int) -> None:
         """Check if the line number is valid."""
         if line_number < 1 or line_number > len(self.lines):
@@ -87,6 +123,9 @@ class SourceFile:
     def __len__(self) -> int:
         """Returns the number of lines in the source file."""
         return len(self.lines)
+    
+    def __iter__(self):
+        return iter(self.lines)
 
     def __repr__(self) -> str:
         return f"SourceFile(path={self.path}, lines_count={len(self.lines)})"
@@ -117,8 +156,14 @@ class SourceFile:
         # If the file ends with a newline, it will be treated as an empty line
         if file_text.endswith("\n"):
             file_lines.append("")
-        lines = [
-            SourceLine(number=i + 1, line=line)
-            for i, line in enumerate(file_lines)
-        ]   
+
+        # CleansedLines requires the placeholder to be 1-indexed
+        cleansed_lines = CleansedLines(["// Placeholder"] + file_lines)
+        nesting_state = NestingState()
+        lines: list[SourceLine] = []
+        for i, line in enumerate(file_lines):
+            nesting_state.Update(file_path.name, cleansed_lines, i+1, lambda *args: None)
+            block_info_tuple = tuple(deepcopy(nesting_state.stack))
+            lines.append(SourceLine(number=i+1, line=line, block_info=block_info_tuple))
+
         return cls(path=file_path, lines=lines)
